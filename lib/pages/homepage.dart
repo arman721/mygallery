@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mygallery/assets/widgets/favourite.dart';
 import 'dart:io';
 
 import 'package:mygallery/assets/widgets/recent.dart';
@@ -21,12 +21,14 @@ class _HomePageState extends State<HomePage> {
 
   List times = [];
   List images = [];
+  List imageso = [];
+  List imagesf = [];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
-        length: 2,
+        length: 3,
         child: Scaffold(
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.endDocked,
@@ -52,7 +54,7 @@ class _HomePageState extends State<HomePage> {
                     Tab(
                       text: "Gallery",
                     ),
-                  
+                    Tab(text: "Favourite",)
                   ]),
               foregroundColor: Colors.black,
             ),
@@ -63,11 +65,12 @@ class _HomePageState extends State<HomePage> {
                     images: images,
                     imag: _image,
                     times: times,
-                    
+                    imagesf: imagesf,
+                    imageso: imageso,
                   ),
                   // for Gallery
                   Gallery(images: images, imag: _image),
-                
+                  Favourite(images: images, imageso: imageso, imagesf: imagesf, times: times)
                 ],
               ),
             )),
@@ -84,6 +87,7 @@ class _HomePageState extends State<HomePage> {
         _image = File(image.path);
         images.insert(0, _image!);
         times.insert(0, time);
+        imageso.add(_image!);
         Navigator.pop(context);
       });
     }
@@ -148,6 +152,7 @@ class _HomePageState extends State<HomePage> {
         _image = File(image.path);
         images.insert(0, _image!);
         times.insert(0, time);
+        imageso.add(_image!);
         Navigator.pop(context);
       });
     }

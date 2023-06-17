@@ -4,30 +4,30 @@ import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-
 class Recent extends StatefulWidget {
   final List images;
+  final List imageso;
+  final List imagesf;
   final File? imag;
   final List times;
 
-  Recent(
-      {super.key,
-      required this.images,
-      required this.imag,
-      required this.times,
-      });
+  Recent({
+    super.key,
+    required this.images,
+    required this.imag,
+    required this.times,
+    required this.imageso,
+    required this.imagesf,
+  });
 
   @override
   State<Recent> createState() => _RecentState();
 }
 
 class _RecentState extends State<Recent> {
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +84,18 @@ class _RecentState extends State<Recent> {
                                     children: [
                                       Row(
                                         children: [
-                                          
+                                          InkWell(
+                                            onTap: () => addtofavourite(index),
+                                            child: Icon(Icons.favorite_border,color: Colors.white,),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left:20.0),
+                                            child: InkWell(
+                                              onTap: () =>
+                                                  removefromfavourite(index),
+                                              child: Icon(Icons.remove_circle,size: 20,color: Colors.white,),
+                                            ),
+                                          ),
                                           Padding(
                                             padding:
                                                 const EdgeInsets.only(left: 20),
@@ -94,7 +105,7 @@ class _RecentState extends State<Recent> {
                                                   padding:
                                                       EdgeInsets.only(top: 5),
                                                   height: 20,
-                                                  width: 320,
+                                                  width: 250,
                                                   child: Text(
                                                       "${DateFormat.yMMMd().format(widget.times[index])}",
                                                       style: TextStyle(
@@ -106,7 +117,7 @@ class _RecentState extends State<Recent> {
                                                 ),
                                                 Container(
                                                   height: 20,
-                                                  width: 320,
+                                                  width: 250,
                                                   child: Text(
                                                       "${DateFormat.jms().format(widget.times[index])}",
                                                       style: TextStyle(
@@ -123,8 +134,7 @@ class _RecentState extends State<Recent> {
                                               itemBuilder: (context) => [
                                                     PopupMenuItem(
                                                         value: 0,
-                                                        child: Text("Delete")),
-                                                    
+                                                        child: Text("delete")),
                                                   ])
                                         ],
                                       ),
@@ -175,17 +185,34 @@ class _RecentState extends State<Recent> {
   }
 
   delete(int index) {
+     int d = widget.images.length - 1-index ;
     setState(() {
-      return widget.images.removeAt(index);
+      widget.imagesf.remove(widget.imageso[d]);
+      widget.imageso.removeAt(widget.imageso.length - 1-index);
+      widget.images.removeAt(index);
+
     });
   }
-
-  
 
   selected(value, int index) {
     if (value == 0) {
       delete(index);
-      
     }
+  }
+
+  addtofavourite(int index) {
+    int c = widget.imageso.length - 1-index ;
+    setState(() {
+      widget.imagesf.add(widget.imageso[c]);
+    });
+  }
+
+  removefromfavourite(int index) {
+    int d = widget.imageso.length - 1-index ;
+    setState(() {
+      print("object");
+
+      widget.imagesf.remove(widget.imageso[d]);
+    });
   }
 }
