@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 class Favourite extends StatelessWidget {
-  const Favourite({super.key, required this.images, required this.imageso, required this.imagesf, this.imag, required this.times});
+  const Favourite({super.key, required this.images, required this.imageso, required this.imagesf, this.imag, required this.times, required this.imagesfs});
     final List images;
   final List imageso;
   final List imagesf;
+  final List imagesfs;
   final File? imag;
   final List times;
+  
 
   @override
   Widget build(BuildContext context) {

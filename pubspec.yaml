@@ -41,7 +41,7 @@ dependencies:
   pinch_zoom: ^1.0.0
   intl: ^0.18.1
   easy_image_viewer: ^1.2.1
-  esys_flutter_share_plus: ^2.2.0
+  
   
 
 dev_dependencies:

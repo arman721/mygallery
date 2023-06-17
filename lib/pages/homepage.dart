@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   List images = [];
   List imageso = [];
   List imagesf = [];
+  List imagesfs = [];
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +55,9 @@ class _HomePageState extends State<HomePage> {
                     Tab(
                       text: "Gallery",
                     ),
-                    Tab(text: "Favourite",)
+                    Tab(
+                      text: "Favourite",
+                    )
                   ]),
               foregroundColor: Colors.black,
             ),
@@ -67,10 +70,16 @@ class _HomePageState extends State<HomePage> {
                     times: times,
                     imagesf: imagesf,
                     imageso: imageso,
+                    imagesfs: imagesfs,
                   ),
                   // for Gallery
-                  Gallery(images: images, imag: _image),
-                  Favourite(images: images, imageso: imageso, imagesf: imagesf, times: times)
+                  Gallery(images: images, imag: _image,imagesfs: imagesfs,),
+                  Favourite(
+                      images: images,
+                      imageso: imageso,
+                      imagesf: imagesf,
+                      times: times,
+                      imagesfs: imagesfs,)
                 ],
               ),
             )),
@@ -88,6 +97,7 @@ class _HomePageState extends State<HomePage> {
         images.insert(0, _image!);
         times.insert(0, time);
         imageso.add(_image!);
+        imagesfs.insert(0,false);
         Navigator.pop(context);
       });
     }
@@ -153,6 +163,7 @@ class _HomePageState extends State<HomePage> {
         images.insert(0, _image!);
         times.insert(0, time);
         imageso.add(_image!);
+        imagesfs.insert(0,false);
         Navigator.pop(context);
       });
     }

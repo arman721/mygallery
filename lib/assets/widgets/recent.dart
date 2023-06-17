@@ -1,16 +1,14 @@
 import 'dart:io';
+
 import 'package:easy_image_viewer/easy_image_viewer.dart';
-
-import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:intl/intl.dart';
 
 class Recent extends StatefulWidget {
   final List images;
   final List imageso;
   final List imagesf;
+  final List imagesfs;
   final File? imag;
   final List times;
 
@@ -21,6 +19,7 @@ class Recent extends StatefulWidget {
     required this.times,
     required this.imageso,
     required this.imagesf,
+    required this.imagesfs,
   });
 
   @override
@@ -84,18 +83,25 @@ class _RecentState extends State<Recent> {
                                     children: [
                                       Row(
                                         children: [
-                                          InkWell(
-                                            onTap: () => addtofavourite(index),
-                                            child: Icon(Icons.favorite_border,color: Colors.white,),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(left:20.0),
-                                            child: InkWell(
-                                              onTap: () =>
-                                                  removefromfavourite(index),
-                                              child: Icon(Icons.remove_circle,size: 20,color: Colors.white,),
-                                            ),
-                                          ),
+                                          widget.imagesfs[index]
+                                              ? InkWell(
+                                                  onTap: () =>
+                                                      removefromfavourite(
+                                                          index),
+                                                  child: Icon(
+                                                    Icons.favorite,
+                                                    color: Colors.red,
+                                                  ),
+                                                )
+                                              : InkWell(
+                                                  onTap: () =>
+                                                      addtofavourite(index),
+                                                  child: Icon(
+                                                    Icons
+                                                        .favorite_border_outlined,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
                                           Padding(
                                             padding:
                                                 const EdgeInsets.only(left: 20),
@@ -135,6 +141,14 @@ class _RecentState extends State<Recent> {
                                                     PopupMenuItem(
                                                         value: 0,
                                                         child: Text("delete")),
+                                                    PopupMenuItem(
+                                                        value: 1,
+                                                        child: Text(
+                                                            "Add to Favourite")),
+                                                    PopupMenuItem(
+                                                        value: 2,
+                                                        child: Text(
+                                                            "Remove fromFavourite")),
                                                   ])
                                         ],
                                       ),
@@ -145,6 +159,7 @@ class _RecentState extends State<Recent> {
                                               Image.file(
                                                 widget.images[index],
                                               ).image,
+                                              immersive: true,
                                               swipeDismissible: true,
                                               doubleTapZoomable: true);
                                         },
@@ -185,34 +200,40 @@ class _RecentState extends State<Recent> {
   }
 
   delete(int index) {
-     int d = widget.images.length - 1-index ;
+    int d = widget.images.length - 1 - index;
     setState(() {
       widget.imagesf.remove(widget.imageso[d]);
-      widget.imageso.removeAt(widget.imageso.length - 1-index);
+      widget.imageso.removeAt(widget.imageso.length - 1 - index);
       widget.images.removeAt(index);
-
+      widget.imagesfs.removeAt(index);
     });
   }
 
   selected(value, int index) {
     if (value == 0) {
       delete(index);
+    } else if (value == 1) {
+      addtofavourite(index);
+    } else {
+      removefromfavourite(index);
     }
   }
 
   addtofavourite(int index) {
-    int c = widget.imageso.length - 1-index ;
     setState(() {
+      int c = widget.imageso.length - 1 - index;
       widget.imagesf.add(widget.imageso[c]);
+      widget.imagesfs[widget.imageso.length - c - 1] = true;
     });
   }
 
   removefromfavourite(int index) {
-    int d = widget.imageso.length - 1-index ;
     setState(() {
       print("object");
+      int d = widget.imageso.length - 1 - index;
 
       widget.imagesf.remove(widget.imageso[d]);
+      widget.imagesfs[widget.imageso.length - d - 1] = false;
     });
   }
 }
