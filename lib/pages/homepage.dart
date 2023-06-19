@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mygallery/assets/widgets/favourite.dart';
 import 'dart:io';
-
 import 'package:mygallery/assets/widgets/recent.dart';
-
 import '../assets/widgets/gallery.dart';
 
 class HomePage extends StatefulWidget {

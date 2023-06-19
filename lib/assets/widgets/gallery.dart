@@ -1,18 +1,21 @@
 import 'dart:io';
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class Gallery extends StatefulWidget {
-  const Gallery({super.key, required this.images, required this.imag, required this.imagesfs,});
+  const Gallery({
+    super.key,
+    required this.images,
+    required this.imag,
+    required this.imagesfs,
+  });
 
   final List images;
   final List imagesfs;
   final File? imag;
-
 
   @override
   State<Gallery> createState() => _GalleryState();
