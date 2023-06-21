@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class Recent extends StatefulWidget {
@@ -27,9 +28,18 @@ class Recent extends StatefulWidget {
 }
 
 class _RecentState extends State<Recent> {
+  File? _image;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation:
+                FloatingActionButtonLocation.endDocked,
+            floatingActionButton: FloatingActionButton(
+              onPressed: showBottom,
+              child: const Icon(Icons.add_a_photo),
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+            ),
         body: widget.images.length == 0
             ? Container(
                 child: Center(
@@ -235,5 +245,86 @@ class _RecentState extends State<Recent> {
       widget.imagesf.remove(widget.imageso[d]);
       widget.imagesfs[widget.imageso.length - d - 1] = false;
     });
+  }
+  Future<void> getfreomgallery() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final time = DateTime.now();
+
+      setState(() {
+        _image = File(image.path);
+        widget.images.insert(0, _image!);
+        widget.times.insert(0, time);
+        widget.imageso.add(_image!);
+        widget.imagesfs.insert(0,false);
+        Navigator.pop(context);
+      });
+    }
+  }
+
+  showBottom() {
+    showModalBottomSheet(
+        constraints: BoxConstraints(maxHeight: 150),
+        backgroundColor: Colors.white,
+        context: context,
+        builder: (context) {
+          return Center(
+            child: Wrap(
+              direction: Axis.horizontal,
+              children: [
+                InkWell(
+                  onTap: getfreomcamera,
+                  child: Container(
+                    height: 100,
+                    width: 70,
+                    child: Column(
+                      children: [
+                        Container(
+                            height: 50,
+                            width: 50,
+                            child: CircleAvatar(child: Icon(Icons.camera))),
+                        Text("Camera")
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                InkWell(
+                  onTap: getfreomgallery,
+                  child: Container(
+                    child: Column(
+                      children: [
+                        Container(
+                            height: 50,
+                            width: 50,
+                            child:
+                                Image.asset("lib/assets/images/gallery.jpg")),
+                        Text("Gallery"),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  Future<void> getfreomcamera() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (image != null) {
+      final time = DateTime.now();
+
+      setState(() {
+        _image = File(image.path);
+        widget.images.insert(0, _image!);
+        widget.times.insert(0, time);
+        widget.imageso.add(_image!);
+        widget.imagesfs.insert(0,false);
+        Navigator.pop(context);
+      });
+    }
   }
 }
