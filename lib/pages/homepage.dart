@@ -66,7 +66,8 @@ class _HomePageState extends State<HomePage> {
                     imagesfs: imagesfs,
                   ),
                   // for Gallery
-                  Gallery(images: images, imag: _image,imagesfs: imagesfs,),
+                  Gallery(images: images, imag: _image,imagesfs: imagesfs,
+                  imagesf: imagesf,imageso: imageso,times: times,),
                   Favourite(
                       images: images,
                       imageso: imageso,
@@ -78,6 +79,87 @@ class _HomePageState extends State<HomePage> {
             )),
       ),
     );
+  }
+    Future<void> getfreomgallery() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final time = DateTime.now();
+
+      setState(() {
+        _image = File(image.path);
+        images.insert(0, _image!);
+        times.insert(0, time);
+        imageso.add(_image!);
+        imagesfs.insert(0, false);
+        Navigator.pop(context);
+      });
+    }
+  }
+
+  showBottom() {
+    showModalBottomSheet(
+        constraints: BoxConstraints(maxHeight: 150),
+        backgroundColor: Colors.white,
+        context: context,
+        builder: (context) {
+          return Center(
+            child: Wrap(
+              direction: Axis.horizontal,
+              children: [
+                InkWell(
+                  onTap: getfreomcamera,
+                  child: Container(
+                    height: 100,
+                    width: 70,
+                    child: Column(
+                      children: [
+                        Container(
+                            height: 50,
+                            width: 50,
+                            child: CircleAvatar(child: Icon(Icons.camera))),
+                        Text("Camera")
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                InkWell(
+                  onTap: getfreomgallery,
+                  child: Container(
+                    child: Column(
+                      children: [
+                        Container(
+                            height: 50,
+                            width: 50,
+                            child:
+                                Image.asset("lib/assets/images/gallery.jpg")),
+                        Text("Gallery"),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  Future<void> getfreomcamera() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (image != null) {
+      final time = DateTime.now();
+
+      setState(() {
+        _image = File(image.path);
+        images.insert(0, _image!);
+        times.insert(0, time);
+        imageso.add(_image!);
+        imagesfs.insert(0, false);
+        Navigator.pop(context);
+      });
+    }
   }
 
   

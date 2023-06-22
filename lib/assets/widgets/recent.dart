@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:image_editor_dove/flutter_image_editor.dart';
+import 'package:image_editor_dove/image_editor.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -32,14 +34,13 @@ class _RecentState extends State<Recent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation:
-                FloatingActionButtonLocation.endDocked,
-            floatingActionButton: FloatingActionButton(
-              onPressed: showBottom,
-              child: const Icon(Icons.add_a_photo),
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        floatingActionButton: FloatingActionButton(
+          onPressed: showBottom,
+          child: const Icon(Icons.add_a_photo),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+        ),
         body: widget.images.length == 0
             ? Container(
                 child: Center(
@@ -91,76 +92,85 @@ class _RecentState extends State<Recent> {
                                       borderRadius: BorderRadius.circular(30)),
                                   child: Column(
                                     children: [
-                                      Row(
-                                        children: [
-                                          widget.imagesfs[index]
-                                              ? InkWell(
-                                                  onTap: () =>
-                                                      removefromfavourite(
-                                                          index),
-                                                  child: Icon(
-                                                    Icons.favorite,
-                                                    color: Colors.red,
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: Row(
+                                          children: [
+                                            widget.imagesfs[index]
+                                                ? InkWell(
+                                                    onTap: () =>
+                                                        removefromfavourite(
+                                                            index),
+                                                    child: Icon(
+                                                      Icons.favorite,
+                                                      color: Colors.red,
+                                                    ),
+                                                  )
+                                                : InkWell(
+                                                    onTap: () =>
+                                                        addtofavourite(index),
+                                                    child: Icon(
+                                                      Icons
+                                                          .favorite_border_outlined,
+                                                      color: Colors.white,
+                                                    ),
                                                   ),
-                                                )
-                                              : InkWell(
-                                                  onTap: () =>
-                                                      addtofavourite(index),
-                                                  child: Icon(
-                                                    Icons
-                                                        .favorite_border_outlined,
-                                                    color: Colors.white,
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 20),
+                                              child: Column(
+                                                children: [
+                                                  Container(
+                                                    padding:
+                                                        EdgeInsets.only(top: 5),
+                                                    height: 20,
+                                                    width: 292,
+                                                    child: Text(
+                                                        "${DateFormat.yMMMd().format(widget.times[index])}",
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 15)),
                                                   ),
-                                                ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 20),
-                                            child: Column(
-                                              children: [
-                                                Container(
-                                                  padding:
-                                                      EdgeInsets.only(top: 5),
-                                                  height: 20,
-                                                  width: 250,
-                                                  child: Text(
-                                                      "${DateFormat.yMMMd().format(widget.times[index])}",
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 15)),
-                                                ),
-                                                SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Container(
-                                                  height: 20,
-                                                  width: 250,
-                                                  child: Text(
-                                                      "${DateFormat.jms().format(widget.times[index])}",
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 13)),
-                                                ),
-                                              ],
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Container(
+                                                    height: 20,
+                                                    width: 292,
+                                                    child: Text(
+                                                        "${DateFormat.jms().format(widget.times[index])}",
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 13)),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          PopupMenuButton(
-                                              color: Colors.white,
-                                              onSelected: (value) =>
-                                                  selected(value, index),
-                                              itemBuilder: (context) => [
-                                                    PopupMenuItem(
-                                                        value: 0,
-                                                        child: Text("delete")),
-                                                    PopupMenuItem(
-                                                        value: 1,
-                                                        child: Text(
-                                                            "Add to Favourite")),
-                                                    PopupMenuItem(
-                                                        value: 2,
-                                                        child: Text(
-                                                            "Remove fromFavourite")),
-                                                  ])
-                                        ],
+                                            PopupMenuButton(
+                                                color: Colors.white,
+                                                onSelected: (value) =>
+                                                    selected(value, index),
+                                                itemBuilder: (context) => [
+                                                      PopupMenuItem(
+                                                          value: 2,
+                                                          child: Text(
+                                                              "edit image")),
+                                                      PopupMenuItem(
+                                                          value: 1,
+                                                          child: widget
+                                                                      .imagesfs[
+                                                                  index]
+                                                              ? Text(
+                                                                  "Remove fromFavourite")
+                                                              : Text(
+                                                                  "Add to Favourite")),
+                                                      PopupMenuItem(
+                                                          value: 0,
+                                                          child:
+                                                              Text("delete")),
+                                                    ])
+                                          ],
+                                        ),
                                       ),
                                       InkWell(
                                         onTap: () {
@@ -222,10 +232,14 @@ class _RecentState extends State<Recent> {
   selected(value, int index) {
     if (value == 0) {
       delete(index);
+    } else if (value == 2) {
+      toImageEditor(index);
     } else if (value == 1) {
-      addtofavourite(index);
-    } else {
-      removefromfavourite(index);
+      if (widget.imagesfs[index]) {
+        removefromfavourite(index);
+      } else {
+        addtofavourite(index);
+      }
     }
   }
 
@@ -246,6 +260,7 @@ class _RecentState extends State<Recent> {
       widget.imagesfs[widget.imageso.length - d - 1] = false;
     });
   }
+
   Future<void> getfreomgallery() async {
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -256,7 +271,7 @@ class _RecentState extends State<Recent> {
         widget.images.insert(0, _image!);
         widget.times.insert(0, time);
         widget.imageso.add(_image!);
-        widget.imagesfs.insert(0,false);
+        widget.imagesfs.insert(0, false);
         Navigator.pop(context);
       });
     }
@@ -322,9 +337,26 @@ class _RecentState extends State<Recent> {
         widget.images.insert(0, _image!);
         widget.times.insert(0, time);
         widget.imageso.add(_image!);
-        widget.imagesfs.insert(0,false);
+        widget.imagesfs.insert(0, false);
         Navigator.pop(context);
       });
     }
+  }
+
+  Future<void> toImageEditor(index) async {
+    return Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return ImageEditor(
+        originImage: widget.images[index],
+        //this is nullable, you can custom new file's save postion
+      );
+    })).then((result) {
+      if (result is EditorImageResult) {
+        setState(() {
+          widget.images[index] = result.newFile;
+        });
+      }
+    }).catchError((er) {
+      debugPrint(er);
+    });
   }
 }
