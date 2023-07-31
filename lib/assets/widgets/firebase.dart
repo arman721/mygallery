@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class FireBaseImages extends StatefulWidget {
-  const FireBaseImages({super.key, required this.imagesfire});
-  final List imagesfire;
+  const FireBaseImages({super.key});
+  
 
   @override
   State<FireBaseImages> createState() => _FireBaseImagesState();

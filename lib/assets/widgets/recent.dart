@@ -1,30 +1,22 @@
 import 'dart:io';
-
+import '../../assets/../pages/homepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:image_editor_dove/flutter_image_editor.dart';
 import 'package:image_editor_dove/image_editor.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:path/path.dart' as Path;
 
 class Recent extends StatefulWidget {
-  final List images;
-  final List imageso;
-  final List imagesf;
-  final List imagesfs;
-  final File? imag;
-  final List times;
+
 
   Recent({
     super.key,
-    required this.images,
-    required this.imag,
-    required this.times,
-    required this.imageso,
-    required this.imagesf,
-    required this.imagesfs,
+    
   });
 
   @override
@@ -33,22 +25,24 @@ class Recent extends StatefulWidget {
 
 class _RecentState extends State<Recent> {
   File? _image;
+  CollectionReference? imgRef;
+  firebase_storage.Reference? ref;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
         floatingActionButton: FloatingActionButton(
-          onPressed: showBottom,
+          onPressed: () => showBottom(),
           child: const Icon(Icons.add_a_photo),
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
         ),
-        body: StreamBuilder(
+        body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream:
                 FirebaseFirestore.instance.collection('ImageURLs').snapshots(),
             builder: (context, snapshot) {
-              return snapshot.data!.docs.length>0
+              return snapshot.data!.docs.length > 0
                   ? Stack(
                       children: [
                         Container(
@@ -85,8 +79,12 @@ class _RecentState extends State<Recent> {
                                                       ? InkWell(
                                                           onTap: () =>
                                                               removefromfavourite(
-                                                                  index,snapshot.data!.docs[index].id
-                                                                  ),
+                                                                  index,
+                                                                  snapshot
+                                                                      .data!
+                                                                      .docs[
+                                                                          index]
+                                                                      .id),
                                                           child: Icon(
                                                             Icons.favorite,
                                                             color: Colors.red,
@@ -96,7 +94,11 @@ class _RecentState extends State<Recent> {
                                                           onTap: () =>
                                                               addtofavourite(
                                                                   index,
-                                                                  snapshot.data!.docs[index].id),
+                                                                  snapshot
+                                                                      .data!
+                                                                      .docs[
+                                                                          index]
+                                                                      .id),
                                                           child: Icon(
                                                             Icons
                                                                 .favorite_border_outlined,
@@ -221,7 +223,8 @@ class _RecentState extends State<Recent> {
                         ),
                       ],
                     )
-                  : Container(color: Colors.black,
+                  : Container(
+                      color: Colors.black,
                       child: Center(
                         child: Column(
                           children: [
@@ -245,24 +248,17 @@ class _RecentState extends State<Recent> {
                           ],
                         ),
                       ),
-
                     );
             }));
   }
 
   delete(int index, id) {
-    // int d = widget.images.length - 1 - index;
+ 
     setState(() async {
       await FirebaseFirestore.instance.collection('ImageURLs').doc(id).delete();
 
-      // widget.imagesf.remove(widget.imageso[d]);
-      // widget.imageso.removeAt(widget.imageso.length - 1 - index);
-      // widget.images.removeAt(index);
-
-      // widget.imagesfs.removeAt(index);
-    });setState(() {
-      
     });
+    setState(() {});
   }
 
   selected(value, int index, snapshot) {
@@ -286,9 +282,6 @@ class _RecentState extends State<Recent> {
           .doc(id)
           .update({'fav': true});
 
-      // int c = widget.imageso.length - 1 - index;
-      // widget.imagesf.add(widget.imageso[c]);
-      // widget.imagesfs[widget.imageso.length - c - 1] = true;
     });
   }
 
@@ -298,34 +291,51 @@ class _RecentState extends State<Recent> {
           .collection('ImageURLs')
           .doc(id)
           .update({'fav': false});
-      // int d = widget.imageso.length - 1 - index;
-
-      // widget.imagesf.remove(widget.imageso[d]);
-      // widget.imagesfs[widget.imageso.length - d - 1] = false;
+      
     });
   }
 
   Future<void> getfreomgallery() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      final time = DateTime.now();
-
-      setState(() {
-        _image = File(image.path);
-        widget.images.insert(0, _image!);
-
-        widget.times.insert(0, time);
-        widget.imageso.add(_image!);
-        widget.imagesfs.insert(0, false);
-        Navigator.pop(context);
-      });
-    }
+    final image = await ImagePicker()
+        .pickImage(source: ImageSource.gallery)
+        .then((value) {
+      if (value != null) {
+        final time = DateTime.now();
+        _image = File(value.path);
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: [Text("Do you want to upload the picture")],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => upload(_image, time).then((value) {
+                            Navigator.pop(context);
+                          }),
+                      child: Text("Upload")),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text("Cancel"))
+                ],
+              );
+            }).then((value) {
+          Navigator.pop(context);
+        });
+      }
+    });
   }
 
   showBottom() {
     showModalBottomSheet(
         constraints: BoxConstraints(maxHeight: 150),
         backgroundColor: Colors.white,
+        isDismissible: true,
         context: context,
         builder: (context) {
           return Center(
@@ -369,40 +379,81 @@ class _RecentState extends State<Recent> {
               ],
             ),
           );
-        });
+        }).asStream();
   }
 
   Future<void> getfreomcamera() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.camera);
-    if (image != null) {
-      final time = DateTime.now();
-
-      setState(() {
-        _image = File(image.path);
-        widget.images.insert(0, _image!);
-        widget.times.insert(0, time);
-        widget.imageso.add(_image!);
-        widget.imagesfs.insert(0, false);
-        Navigator.pop(context);
-      });
-    }
+    final image =
+        await ImagePicker().pickImage(source: ImageSource.camera).then((value) {
+              if (value != null) {
+        final time = DateTime.now();
+        _image = File(value.path);
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: [Text("Do you want to upload the picture")],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => upload(_image, time).then((value) {
+                            Navigator.pop(context);
+                          }),
+                      child: Text("Upload")),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text("Cancel"))
+                ],
+              );
+            }).then((value) {
+          Navigator.pop(context);
+        });
+      }
+    });
   }
 
   Future<void> toImageEditor(index, snapshot) async {
     return Navigator.push(context, MaterialPageRoute(builder: (context) {
       File image = File(snapshot.data!.docs[index].get('url'));
       return ImageEditor(
-        originImage:image,
-        //this is nullable, you can custom new file's save postion
+        originImage: image,
+      
       );
     })).then((result) {
       if (result is EditorImageResult) {
         setState(() {
-          widget.images[index] = result.newFile;
+        
         });
       }
     }).catchError((er) {
       debugPrint(er);
     });
+  }
+
+  Future upload(img, time) async {
+    ref = firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child("images/${Path.basename(img.path)}");
+    await ref!.putFile(img).whenComplete(() async {
+      await ref!.getDownloadURL().then((value) {
+        imgRef!.add({
+          'url': value,
+          'time1': DateFormat.yMMMd().format(time).toString(),
+          'time2': DateFormat.jms().format(time).toString(),
+          'fav': false
+        });
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    imgRef = FirebaseFirestore.instance.collection('ImageURLs');
   }
 }

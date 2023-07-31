@@ -1,31 +1,21 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_editor_dove/flutter_image_editor.dart';
 import 'package:image_editor_dove/image_editor.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as Path;
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class Gallery extends StatefulWidget {
   const Gallery({
     super.key,
-    required this.images,
-    required this.imageso,
-    required this.imagesf,
-    required this.imagesfs,
-    required this.imag,
-    required this.times,
   });
-
-  final List images;
-  final List imageso;
-  final List imagesf;
-  final List imagesfs;
-  final File? imag;
-  final List times;
 
   @override
   State<Gallery> createState() => _GalleryState();
@@ -33,6 +23,8 @@ class Gallery extends StatefulWidget {
 
 class _GalleryState extends State<Gallery> {
   static bool zoom = true;
+  CollectionReference? imgRef;
+  firebase_storage.Reference? ref;
 
   File? _image;
   int i = 0;
@@ -48,7 +40,7 @@ class _GalleryState extends State<Gallery> {
                     .collection('ImageURLs')
                     .snapshots(),
                 builder: (context, snapshot) {
-                  return snapshot.data!.docs.length<1
+                  return snapshot.data!.docs.length==0
                       ? Scaffold(
                           floatingActionButtonLocation:
                               FloatingActionButtonLocation.endDocked,
@@ -183,12 +175,6 @@ class _GalleryState extends State<Gallery> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
                                     children: [
-                                      //  InkWell(
-                                      //     onTap: () =>
-                                      //         toImageEditor(),
-                                      //     child: Icon(Icons.edit,
-                                      //         color: Colors.white),
-                                      //   ),
                                       snapshot.data!.docs[i].get('fav')
                                           ? InkWell(
                                               onTap: () => removefromfavourite(
@@ -214,13 +200,7 @@ class _GalleryState extends State<Gallery> {
                                     ],
                                   ),
                                 )
-                                // Expanded(
-                                //   flex: 1,
-                                //   child:Container(color: Colors.white,
-                                //   child: Row(children: [
-                                //     IconButton(onPressed: delete(i), icon: Icon(Icons.delete)
-                                //   )]),
-                                //   ))
+                              
                               ]),
                             );
                 })));
@@ -238,22 +218,6 @@ class _GalleryState extends State<Gallery> {
     setState(() {
       zoom = true;
     });
-  }
-
-  Future<void> getfreomgallery() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      final time = DateTime.now();
-
-      setState(() {
-        _image = File(image.path);
-        widget.images.insert(0, _image!);
-        widget.times.insert(0, time);
-        widget.imageso.add(_image!);
-        widget.imagesfs.insert(0, false);
-        Navigator.pop(context);
-      });
-    }
   }
 
   showBottom() {
@@ -306,30 +270,9 @@ class _GalleryState extends State<Gallery> {
         });
   }
 
-  Future<void> getfreomcamera() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.camera);
-    if (image != null) {
-      final time = DateTime.now();
-
-      setState(() {
-        _image = File(image.path);
-        widget.images.insert(0, _image!);
-        widget.times.insert(0, time);
-        widget.imageso.add(_image!);
-        widget.imagesfs.insert(0, false);
-        Navigator.pop(context);
-      });
-    }
-  }
-
   delete(int index, id) {
-    int d = widget.images.length - 1 - index;
     setState(() async {
       await FirebaseFirestore.instance.collection('ImageURLs').doc(id).delete();
-      // widget.imagesf.remove(widget.imageso[d]);
-      // widget.imageso.removeAt(widget.imageso.length - 1 - index);
-      // widget.images.removeAt(index);
-      // widget.imagesfs.removeAt(index);
     });
   }
 
@@ -339,10 +282,6 @@ class _GalleryState extends State<Gallery> {
           .collection('ImageURLs')
           .doc(id)
           .update({'fav': true});
-
-      // int c = widget.imageso.length - 1 - index;
-      // widget.imagesf.add(widget.imageso[c]);
-      // widget.imagesfs[widget.imageso.length - c - 1] = true;
     });
   }
 
@@ -352,27 +291,114 @@ class _GalleryState extends State<Gallery> {
           .collection('ImageURLs')
           .doc(id)
           .update({'fav': false});
-      // int d = widget.imageso.length - 1 - index;
-
-      // widget.imagesf.remove(widget.imageso[d]);
-      // widget.imagesfs[widget.imageso.length - d - 1] = false;
     });
   }
 
-  Future<void> toImageEditor(File origin) async {
+  Future<void> getfreomgallery() async {
+    final image = await ImagePicker()
+        .pickImage(source: ImageSource.gallery)
+        .then((value) {
+      if (value != null) {
+        final time = DateTime.now();
+        _image = File(value.path);
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: [Text("Do you want to upload the picture")],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => upload(_image, time).then((value) {
+                            Navigator.pop(context);
+                          }),
+                      child: Text("Upload")),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text("Cancel"))
+                ],
+              );
+            }).then((value) {
+          Navigator.pop(context);
+        });
+      }
+    });
+  }
+
+  Future<void> getfreomcamera() async {
+    final image =
+        await ImagePicker().pickImage(source: ImageSource.camera).then((value) {
+      if (value != null) {
+        final time = DateTime.now();
+        _image = File(value.path);
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: [Text("Do you want to upload the picture")],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => upload(_image, time).then((value) {
+                            Navigator.pop(context);
+                          }),
+                      child: Text("Upload")),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text("Cancel"))
+                ],
+              );
+            }).then((value) {
+          Navigator.pop(context);
+        });
+      }
+    });
+  }
+
+  Future<void> toImageEditor(index, snapshot) async {
     return Navigator.push(context, MaterialPageRoute(builder: (context) {
+      File image = File(snapshot.data!.docs[index].get('url'));
       return ImageEditor(
-        originImage: origin,
-        //this is nullable, you can custom new file's save postion
+        originImage: image,
       );
     })).then((result) {
       if (result is EditorImageResult) {
-        setState(() {
-          widget.images[i] = result.newFile;
-        });
+        setState(() {});
       }
     }).catchError((er) {
       debugPrint(er);
     });
+  }
+
+  Future upload(img, time) async {
+    ref = firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child("images/${Path.basename(img.path)}");
+    await ref!.putFile(img).whenComplete(() async {
+      await ref!.getDownloadURL().then((value) {
+        imgRef!.add({
+          'url': value,
+          'time1': DateFormat.yMMMd().format(time).toString(),
+          'time2': DateFormat.jms().format(time).toString(),
+          'fav': false
+        });
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    imgRef = FirebaseFirestore.instance.collection('ImageURLs');
   }
 }

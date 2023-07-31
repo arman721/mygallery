@@ -9,18 +9,8 @@ import 'package:photo_view/photo_view_gallery.dart';
 class Favourite extends StatefulWidget {
   const Favourite(
       {super.key,
-      required this.images,
-      required this.imageso,
-      required this.imagesf,
-      this.imag,
-      required this.times,
-      required this.imagesfs});
-  final List images;
-  final List imageso;
-  final List imagesf;
-  final List imagesfs;
-  final File? imag;
-  final List times;
+      });
+ 
 
   @override
   State<Favourite> createState() => _FavouriteState();
