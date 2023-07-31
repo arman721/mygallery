@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:image_editor_dove/flutter_image_editor.dart';
 import 'package:image_editor_dove/image_editor.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class Recent extends StatefulWidget {
   final List images;
@@ -31,6 +33,7 @@ class Recent extends StatefulWidget {
 
 class _RecentState extends State<Recent> {
   File? _image;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,223 +44,264 @@ class _RecentState extends State<Recent> {
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
         ),
-        body: widget.images.length == 0
-            ? Container(
-                child: Center(
-                  child: Column(
-                    children: [
-                      Expanded(flex: 4, child: SizedBox()),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                            height: 50,
-                            width: 50,
-                            child:
-                                Image.asset("lib/assets/images/no_item.jpeg")),
-                      ),
-                      Expanded(
-                          flex: 1,
-                          child: Container(
-                              child: Text(
-                            "No Item Found",
-                            style: TextStyle(color: Colors.white),
-                          ))),
-                      Expanded(flex: 4, child: SizedBox()),
-                    ],
-                  ),
-                ),
-                color: Color.fromARGB(255, 0, 0, 0),
-              )
-            : Stack(
-                children: [
-                  Container(
-                    color: Color.fromARGB(225, 0, 0, 0),
-                  ),
-                  Container(
-                    child: SingleChildScrollView(
-                      physics: const ScrollPhysics(),
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 650,
-                            alignment: Alignment.center,
-                            child: ListView.separated(
-                              itemCount: widget.images.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return Container(
-                                  height: 350,
-                                  width: 300,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(30)),
-                                  child: Column(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 8),
-                                        child: Row(
+        body: StreamBuilder(
+            stream:
+                FirebaseFirestore.instance.collection('ImageURLs').snapshots(),
+            builder: (context, snapshot) {
+              return snapshot.data!.docs.length>0
+                  ? Stack(
+                      children: [
+                        Container(
+                          color: Color.fromARGB(225, 0, 0, 0),
+                        ),
+                        Container(
+                          child: SingleChildScrollView(
+                            physics: const ScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 650,
+                                  alignment: Alignment.center,
+                                  child: ListView.separated(
+                                    itemCount: snapshot.data!.docs.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return Container(
+                                        height: 350,
+                                        width: 300,
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(30)),
+                                        child: Column(
                                           children: [
-                                            widget.imagesfs[index]
-                                                ? InkWell(
-                                                    onTap: () =>
-                                                        removefromfavourite(
-                                                            index),
-                                                    child: Icon(
-                                                      Icons.favorite,
-                                                      color: Colors.red,
-                                                    ),
-                                                  )
-                                                : InkWell(
-                                                    onTap: () =>
-                                                        addtofavourite(index),
-                                                    child: Icon(
-                                                      Icons
-                                                          .favorite_border_outlined,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
                                             Padding(
                                               padding: const EdgeInsets.only(
-                                                  left: 20),
-                                              child: Column(
+                                                  left: 8),
+                                              child: Row(
                                                 children: [
-                                                  Container(
+                                                  snapshot.data!.docs[index]
+                                                          .get('fav')
+                                                      ? InkWell(
+                                                          onTap: () =>
+                                                              removefromfavourite(
+                                                                  index,snapshot.data!.docs[index].id
+                                                                  ),
+                                                          child: Icon(
+                                                            Icons.favorite,
+                                                            color: Colors.red,
+                                                          ),
+                                                        )
+                                                      : InkWell(
+                                                          onTap: () =>
+                                                              addtofavourite(
+                                                                  index,
+                                                                  snapshot.data!.docs[index].id),
+                                                          child: Icon(
+                                                            Icons
+                                                                .favorite_border_outlined,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                  Padding(
                                                     padding:
-                                                        EdgeInsets.only(top: 5),
-                                                    height: 20,
-                                                    width: 292,
-                                                    child: Text(
-                                                        "${DateFormat.yMMMd().format(widget.times[index])}",
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 15)),
+                                                        const EdgeInsets.only(
+                                                            left: 20),
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                                  top: 5),
+                                                          height: 20,
+                                                          width: 292,
+                                                          child: Text(
+                                                              "${snapshot.data!.docs[index].get('time1')}",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      15)),
+                                                        ),
+                                                        SizedBox(
+                                                          height: 5,
+                                                        ),
+                                                        Container(
+                                                          height: 20,
+                                                          width: 292,
+                                                          child: Text(
+                                                              "${snapshot.data!.docs[index].get('time2')}",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      13)),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
-                                                  SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Container(
-                                                    height: 20,
-                                                    width: 292,
-                                                    child: Text(
-                                                        "${DateFormat.jms().format(widget.times[index])}",
-                                                        style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 13)),
-                                                  ),
+                                                  PopupMenuButton(
+                                                      color: Colors.white,
+                                                      onSelected: (value) =>
+                                                          selected(value, index,
+                                                              snapshot),
+                                                      itemBuilder: (context) =>
+                                                          [
+                                                            PopupMenuItem(
+                                                                value: 2,
+                                                                child: Text(
+                                                                    "edit image")),
+                                                            PopupMenuItem(
+                                                                value: 1,
+                                                                child: snapshot
+                                                                        .data!
+                                                                        .docs[
+                                                                            index]
+                                                                        .get(
+                                                                            'fav')
+                                                                    ? Text(
+                                                                        "Remove fromFavourite")
+                                                                    : Text(
+                                                                        "Add to Favourite")),
+                                                            PopupMenuItem(
+                                                                value: 0,
+                                                                child: Text(
+                                                                    "delete")),
+                                                          ])
                                                 ],
                                               ),
                                             ),
-                                            PopupMenuButton(
-                                                color: Colors.white,
-                                                onSelected: (value) =>
-                                                    selected(value, index),
-                                                itemBuilder: (context) => [
-                                                      PopupMenuItem(
-                                                          value: 2,
-                                                          child: Text(
-                                                              "edit image")),
-                                                      PopupMenuItem(
-                                                          value: 1,
-                                                          child: widget
-                                                                      .imagesfs[
-                                                                  index]
-                                                              ? Text(
-                                                                  "Remove fromFavourite")
-                                                              : Text(
-                                                                  "Add to Favourite")),
-                                                      PopupMenuItem(
-                                                          value: 0,
-                                                          child:
-                                                              Text("delete")),
-                                                    ])
+                                            InkWell(
+                                              onTap: () {
+                                                showImageViewer(
+                                                    context,
+                                                    Image.network(snapshot
+                                                            .data!.docs[index]
+                                                            .get('url'))
+                                                        .image,
+                                                    immersive: true,
+                                                    swipeDismissible: true,
+                                                    doubleTapZoomable: true);
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.only(
+                                                    bottom: 10, top: 10),
+                                                height: 250,
+                                                width: 370,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                          Radius.circular(10)),
+                                                  child:
+                                                      FadeInImage.memoryNetwork(
+                                                          fit: BoxFit.cover,
+                                                          height: 100,
+                                                          placeholder:
+                                                              kTransparentImage,
+                                                          image: snapshot
+                                                              .data!.docs[index]
+                                                              .get('url')),
+                                                ),
+                                              ),
+                                            ),
                                           ],
                                         ),
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          showImageViewer(
-                                              context,
-                                              Image.file(
-                                                widget.images[index],
-                                              ).image,
-                                              immersive: true,
-                                              swipeDismissible: true,
-                                              doubleTapZoomable: true);
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.only(
-                                              bottom: 10, top: 10),
-                                          height: 250,
-                                          width: 370,
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(10)),
-                                            child: Image.file(
-                                              widget.images[index],
-                                              width: 400,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                      );
+                                    },
+                                    separatorBuilder: (context, index) {
+                                      return Divider(
+                                        color: Colors.white,
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                              separatorBuilder: (context, index) {
-                                return Divider(
-                                  color: Colors.white,
-                                );
-                              },
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    )
+                  : Container(color: Colors.black,
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Expanded(flex: 4, child: SizedBox()),
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                  height: 50,
+                                  width: 50,
+                                  child: Image.asset(
+                                      "lib/assets/images/no_item.jpeg")),
+                            ),
+                            Expanded(
+                                flex: 1,
+                                child: Container(
+                                    child: Text(
+                                  "No Item Found",
+                                  style: TextStyle(color: Colors.white),
+                                ))),
+                            Expanded(flex: 4, child: SizedBox()),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ));
+
+                    );
+            }));
   }
 
-  delete(int index) {
-    int d = widget.images.length - 1 - index;
-    setState(() {
-      widget.imagesf.remove(widget.imageso[d]);
-      widget.imageso.removeAt(widget.imageso.length - 1 - index);
-      widget.images.removeAt(index);
-      widget.imagesfs.removeAt(index);
+  delete(int index, id) {
+    // int d = widget.images.length - 1 - index;
+    setState(() async {
+      await FirebaseFirestore.instance.collection('ImageURLs').doc(id).delete();
+
+      // widget.imagesf.remove(widget.imageso[d]);
+      // widget.imageso.removeAt(widget.imageso.length - 1 - index);
+      // widget.images.removeAt(index);
+
+      // widget.imagesfs.removeAt(index);
+    });setState(() {
+      
     });
   }
 
-  selected(value, int index) {
+  selected(value, int index, snapshot) {
     if (value == 0) {
-      delete(index);
+      delete(index, snapshot.data!.docs[index].id);
     } else if (value == 2) {
-      toImageEditor(index);
+      toImageEditor(index, snapshot);
     } else if (value == 1) {
-      if (widget.imagesfs[index]) {
-        removefromfavourite(index);
+      if (snapshot.data!.docs[index].get('fav')) {
+        removefromfavourite(index, snapshot.data!.docs[index].id);
       } else {
-        addtofavourite(index);
+        addtofavourite(index, snapshot.data!.docs[index].id);
       }
     }
   }
 
-  addtofavourite(int index) {
-    setState(() {
-      int c = widget.imageso.length - 1 - index;
-      widget.imagesf.add(widget.imageso[c]);
-      widget.imagesfs[widget.imageso.length - c - 1] = true;
+  addtofavourite(int index, id) {
+    setState(() async {
+      await FirebaseFirestore.instance
+          .collection('ImageURLs')
+          .doc(id)
+          .update({'fav': true});
+
+      // int c = widget.imageso.length - 1 - index;
+      // widget.imagesf.add(widget.imageso[c]);
+      // widget.imagesfs[widget.imageso.length - c - 1] = true;
     });
   }
 
-  removefromfavourite(int index) {
-    setState(() {
-      print("object");
-      int d = widget.imageso.length - 1 - index;
+  removefromfavourite(int index, id) {
+    setState(() async {
+      await FirebaseFirestore.instance
+          .collection('ImageURLs')
+          .doc(id)
+          .update({'fav': false});
+      // int d = widget.imageso.length - 1 - index;
 
-      widget.imagesf.remove(widget.imageso[d]);
-      widget.imagesfs[widget.imageso.length - d - 1] = false;
+      // widget.imagesf.remove(widget.imageso[d]);
+      // widget.imagesfs[widget.imageso.length - d - 1] = false;
     });
   }
 
@@ -269,6 +313,7 @@ class _RecentState extends State<Recent> {
       setState(() {
         _image = File(image.path);
         widget.images.insert(0, _image!);
+
         widget.times.insert(0, time);
         widget.imageso.add(_image!);
         widget.imagesfs.insert(0, false);
@@ -343,10 +388,11 @@ class _RecentState extends State<Recent> {
     }
   }
 
-  Future<void> toImageEditor(index) async {
+  Future<void> toImageEditor(index, snapshot) async {
     return Navigator.push(context, MaterialPageRoute(builder: (context) {
+      File image = File(snapshot.data!.docs[index].get('url'));
       return ImageEditor(
-        originImage: widget.images[index],
+        originImage:image,
         //this is nullable, you can custom new file's save postion
       );
     })).then((result) {

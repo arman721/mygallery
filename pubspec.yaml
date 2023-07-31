@@ -42,6 +42,11 @@ dependencies:
   intl: ^0.18.1
   easy_image_viewer: ^1.2.1
   image_editor_dove: ^0.0.2
+  cloud_firestore: ^4.4.5
+  firebase_storage: ^11.2.3
+  path: ^1.8.2
+  transparent_image: ^2.0.1
+  network_to_file_image: ^4.0.1
   
 
 dev_dependencies:
