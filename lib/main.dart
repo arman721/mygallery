@@ -1,4 +1,5 @@
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mygallery/pages/homepage.dart';
 import 'package:mygallery/pages/loginpage.dart';
@@ -20,16 +21,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(debugShowCheckedModeBanner: false,
-    initialRoute: "/",
-    
-        routes: {
-          "/":(context) =>  HomePage(),
-          "/login":(context) => const LoginPage(),
-          "/home":(context) => HomePage(),
-          
-          
-          
-        },
+    home:( FirebaseAuth.instance.currentUser!=null)?HomePage():LoginPage()
+   
         );
         
         

@@ -46,7 +46,8 @@ dependencies:
   firebase_storage: ^11.2.3
   path: ^1.8.2
   transparent_image: ^2.0.1
-  network_to_file_image: ^4.0.1
+  firebase_auth: ^4.7.2
+  firebase_core: ^2.15.0
   
 
 dev_dependencies:

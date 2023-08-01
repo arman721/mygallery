@@ -1,13 +1,16 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mygallery/assets/widgets/favourite.dart';
 import 'package:mygallery/assets/widgets/firebase.dart';
 import 'package:mygallery/assets/widgets/recent.dart';
+import 'package:mygallery/pages/loginpage.dart';
 import 'package:path/path.dart' as Path;
 
 import '../assets/widgets/gallery.dart';
@@ -24,7 +27,12 @@ class _HomePageState extends State<HomePage> {
   CollectionReference? imgRef;
   firebase_storage.Reference? ref;
 
- 
+  signout(context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.popUntil(context, (route) => route.isFirst);
+    Navigator.pushReplacement(
+        context, CupertinoPageRoute(builder: (context) => LoginPage()));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +41,11 @@ class _HomePageState extends State<HomePage> {
         length: 4,
         child: Scaffold(
             appBar: AppBar(
-             
+              actions: [
+                IconButton(
+                    onPressed: () => signout(context),
+                    icon: Icon(Icons.exit_to_app),color: Colors.white,)
+              ],
               title: Text(
                 "WELCOME",
                 style: TextStyle(color: Colors.white, fontSize: 25),
@@ -61,19 +73,11 @@ class _HomePageState extends State<HomePage> {
             body: SafeArea(
               child: TabBarView(
                 children: [
-                  FireBaseImages(
-                
-                  ),
-                  Recent(
-                   
-                  ),
+                  FireBaseImages(),
+                  Recent(),
                   // for Gallery
-                  Gallery(
-                
-                  ),
-                  Favourite(
-                   
-                  )
+                  Gallery(),
+                  Favourite()
                 ],
               ),
             )),
@@ -86,7 +90,6 @@ class _HomePageState extends State<HomePage> {
     if (image != null) {
       final time = DateTime.now();
       setState(() {
-        
         showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -96,19 +99,9 @@ class _HomePageState extends State<HomePage> {
                     children: [Text("Do you want to upload the picture")],
                   ),
                 ),
-                
               );
             });
       });
     }
   }
-
-  
-
 }
-
- 
-  
-
-
-
