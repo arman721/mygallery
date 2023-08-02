@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mygallery/assets/widgets/loginauth.dart';
+
 import '../../assets/../pages/homepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
@@ -12,11 +15,10 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:path/path.dart' as Path;
 
 class Recent extends StatefulWidget {
-
+  final String? email;
 
   Recent({
-    super.key,
-    
+    super.key,  required this.email,
   });
 
   @override
@@ -38,9 +40,9 @@ class _RecentState extends State<Recent> {
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
         ),
-        body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        body: StreamBuilder(
             stream:
-                FirebaseFirestore.instance.collection('ImageURLs').snapshots(),
+                FirebaseFirestore.instance.collection('${widget.email}').snapshots(),
             builder: (context, snapshot) {
               return snapshot.data!.docs.length > 0
                   ? Stack(
@@ -253,10 +255,8 @@ class _RecentState extends State<Recent> {
   }
 
   delete(int index, id) {
- 
     setState(() async {
-      await FirebaseFirestore.instance.collection('ImageURLs').doc(id).delete();
-
+      await FirebaseFirestore.instance.collection('${widget.email}').doc(id).delete();
     });
     setState(() {});
   }
@@ -278,20 +278,18 @@ class _RecentState extends State<Recent> {
   addtofavourite(int index, id) {
     setState(() async {
       await FirebaseFirestore.instance
-          .collection('ImageURLs')
+          .collection('${widget.email}')
           .doc(id)
           .update({'fav': true});
-
     });
   }
 
   removefromfavourite(int index, id) {
     setState(() async {
       await FirebaseFirestore.instance
-          .collection('ImageURLs')
+          .collection('${widget.email}')
           .doc(id)
           .update({'fav': false});
-      
     });
   }
 
@@ -316,7 +314,7 @@ class _RecentState extends State<Recent> {
                       onPressed: () => upload(_image, time).then((value) {
                             Navigator.pop(context);
                           }),
-                      child: Text("Upload")),
+                      child: Text("upload")),
                   TextButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -385,7 +383,7 @@ class _RecentState extends State<Recent> {
   Future<void> getfreomcamera() async {
     final image =
         await ImagePicker().pickImage(source: ImageSource.camera).then((value) {
-              if (value != null) {
+      if (value != null) {
         final time = DateTime.now();
         _image = File(value.path);
         showDialog(
@@ -402,7 +400,7 @@ class _RecentState extends State<Recent> {
                       onPressed: () => upload(_image, time).then((value) {
                             Navigator.pop(context);
                           }),
-                      child: Text("Upload")),
+                      child: Text("upload")),
                   TextButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -422,13 +420,10 @@ class _RecentState extends State<Recent> {
       File image = File(snapshot.data!.docs[index].get('url'));
       return ImageEditor(
         originImage: image,
-      
       );
     })).then((result) {
       if (result is EditorImageResult) {
-        setState(() {
-        
-        });
+        setState(() {});
       }
     }).catchError((er) {
       debugPrint(er);
@@ -454,6 +449,6 @@ class _RecentState extends State<Recent> {
   @override
   void initState() {
     super.initState();
-    imgRef = FirebaseFirestore.instance.collection('ImageURLs');
+    imgRef = FirebaseFirestore.instance.collection('${widget.email}');
   }
 }

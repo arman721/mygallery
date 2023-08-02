@@ -7,10 +7,10 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class Favourite extends StatefulWidget {
-  const Favourite(
-      {super.key,
-      });
- 
+  const Favourite({
+    super.key, required this.email,
+  });
+  final String? email;
 
   @override
   State<Favourite> createState() => _FavouriteState();
@@ -27,7 +27,7 @@ class _FavouriteState extends State<Favourite> {
     return Scaffold(
         body: StreamBuilder(
             stream:
-                FirebaseFirestore.instance.collection('ImageURLs').snapshots(),
+                FirebaseFirestore.instance.collection('${widget.email}').snapshots(),
             builder: (context, snapshot) {
               for (i = 0; i < snapshot.data!.docs.length; i++) {
                 if (snapshot.data!.docs[i].get('fav') == true) {

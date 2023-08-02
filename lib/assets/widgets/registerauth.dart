@@ -10,6 +10,7 @@ class RegisterAuth extends StatelessWidget {
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
   TextEditingController cpasswordcontroller = TextEditingController();
+  String nameo = "ajb";
 
   createaccount() async {
     String name = namecontroller.text.trim();
@@ -19,11 +20,11 @@ class RegisterAuth extends StatelessWidget {
 
     if (email == "" || password == "") {
       print("fill");
-     
     } else if (password != cpassword) {
       print("password not matching");
     } else {
       try {
+        nameo = email;
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
         print("User created");
@@ -114,8 +115,7 @@ class RegisterAuth extends StatelessWidget {
                 ),
               ])),
           InkWell(
-            onTap:createaccount
-            ,
+            onTap: createaccount,
             child: Container(
               alignment: Alignment.center,
               height: 50,

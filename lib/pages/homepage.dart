@@ -16,8 +16,9 @@ import 'package:path/path.dart' as Path;
 import '../assets/widgets/gallery.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
+  const HomePage({super.key, required this.email});
+  final String? email;
+  
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -26,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   File? _image;
   CollectionReference? imgRef;
   firebase_storage.Reference? ref;
+
 
   signout(context) async {
     await FirebaseAuth.instance.signOut();
@@ -43,8 +45,10 @@ class _HomePageState extends State<HomePage> {
             appBar: AppBar(
               actions: [
                 IconButton(
-                    onPressed: () => signout(context),
-                    icon: Icon(Icons.exit_to_app),color: Colors.white,)
+                  onPressed: () => signout(context),
+                  icon: Icon(Icons.exit_to_app),
+                  color: Colors.white,
+                )
               ],
               title: Text(
                 "WELCOME",
@@ -74,10 +78,12 @@ class _HomePageState extends State<HomePage> {
               child: TabBarView(
                 children: [
                   FireBaseImages(),
-                  Recent(),
+                  Recent(email:widget.email ,),
                   // for Gallery
-                  Gallery(),
-                  Favourite()
+                  Gallery(
+                    email: widget.email,
+                  ),
+                  Favourite(email: widget.email,)
                 ],
               ),
             )),

@@ -1,13 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mygallery/assets/widgets/recent.dart';
+import 'package:mygallery/assets/widgets/userdata.dart';
 import 'package:mygallery/pages/homepage.dart';
 import 'package:path/path.dart';
+import 'userdata.dart';
 
-class LoginAuth extends StatelessWidget {
+class LoginAuth extends StatefulWidget {
   LoginAuth({super.key});
+
+  @override
+  State<LoginAuth> createState() => _LoginAuthState();
+}
+
+class _LoginAuthState extends State<LoginAuth> {
   TextEditingController emailcontroller = TextEditingController();
+
   TextEditingController passwordcontroller = TextEditingController();
+
+  String emailo = "";
+
   @override
   login(context) async {
     String email = emailcontroller.text.trim();
@@ -17,12 +30,18 @@ class LoginAuth extends StatelessWidget {
       print("Field all the field");
     } else {
       try {
+        emailo = email;
         UserCredential userCredential = await FirebaseAuth.instance
             .signInWithEmailAndPassword(email: email, password: password);
         if (userCredential != null) {
+          print("${userCredential.user!.email}");
           Navigator.popUntil(context, (route) => route.isFirst);
           Navigator.pushReplacement(
-              context, CupertinoPageRoute(builder: (context) => HomePage()));
+              context,
+              CupertinoPageRoute(
+                  builder: (context) => HomePage(
+                        email:emailo,
+                      )));
         }
       } on FirebaseAuthException catch (ex) {
         print("ex");

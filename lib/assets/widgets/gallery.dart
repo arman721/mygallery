@@ -14,8 +14,9 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 class Gallery extends StatefulWidget {
   const Gallery({
-    super.key,
+    super.key, required this.email,
   });
+  final String? email;
 
   @override
   State<Gallery> createState() => _GalleryState();
@@ -37,10 +38,10 @@ class _GalleryState extends State<Gallery> {
         home: Scaffold(
             body: StreamBuilder(
                 stream: FirebaseFirestore.instance
-                    .collection('ImageURLs')
+                    .collection('${widget.email}')
                     .snapshots(),
                 builder: (context, snapshot) {
-                  return snapshot.data!.docs.length==0
+                  return snapshot.data!.docs.length == 0
                       ? Scaffold(
                           floatingActionButtonLocation:
                               FloatingActionButtonLocation.endDocked,
@@ -200,7 +201,6 @@ class _GalleryState extends State<Gallery> {
                                     ],
                                   ),
                                 )
-                              
                               ]),
                             );
                 })));
@@ -272,14 +272,14 @@ class _GalleryState extends State<Gallery> {
 
   delete(int index, id) {
     setState(() async {
-      await FirebaseFirestore.instance.collection('ImageURLs').doc(id).delete();
+      await FirebaseFirestore.instance.collection('${widget.email}').doc(id).delete();
     });
   }
 
   addtofavourite(int index, id) {
     setState(() async {
       await FirebaseFirestore.instance
-          .collection('ImageURLs')
+          .collection('${widget.email}')
           .doc(id)
           .update({'fav': true});
     });
@@ -288,7 +288,7 @@ class _GalleryState extends State<Gallery> {
   removefromfavourite(int index, id) {
     setState(() async {
       await FirebaseFirestore.instance
-          .collection('ImageURLs')
+          .collection('${widget.email}')
           .doc(id)
           .update({'fav': false});
     });
@@ -399,6 +399,6 @@ class _GalleryState extends State<Gallery> {
   @override
   void initState() {
     super.initState();
-    imgRef = FirebaseFirestore.instance.collection('ImageURLs');
+    imgRef = FirebaseFirestore.instance.collection('${widget.email}');
   }
 }
