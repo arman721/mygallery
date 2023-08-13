@@ -6,19 +6,16 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:mygallery/assets/widgets/favourite.dart';
-import 'package:mygallery/assets/widgets/firebase.dart';
 import 'package:mygallery/assets/widgets/recent.dart';
 import 'package:mygallery/pages/loginpage.dart';
-import 'package:path/path.dart' as Path;
 
 import '../assets/widgets/gallery.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.email});
   final String? email;
-  
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -27,7 +24,6 @@ class _HomePageState extends State<HomePage> {
   File? _image;
   CollectionReference? imgRef;
   firebase_storage.Reference? ref;
-
 
   signout(context) async {
     await FirebaseAuth.instance.signOut();
@@ -40,15 +36,27 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
-        length: 4,
+        length: 3,
         child: Scaffold(
             appBar: AppBar(
               actions: [
                 IconButton(
-                  onPressed: () => signout(context),
-                  icon: Icon(Icons.exit_to_app),
-                  color: Colors.white,
-                )
+                  onPressed: () {
+                    showMenu(color: Color.fromARGB(255, 51, 50, 50),
+                      context: context,position: RelativeRect.fromLTRB(100, 0,0, 0),items: [
+                      PopupMenuItem(child: Text("${widget.email}",style: TextStyle(color: Colors.white),),),
+                      PopupMenuItem(onTap: () => signout(context),
+                        child: Row(children: [Text("Sign Out",style: TextStyle(color: Colors.white),),Icon(color:Colors.white,
+                          Icons.exit_to_app)]),),
+                    ]);
+                  },
+                  icon: Icon(Icons.account_circle,color: Colors.white,size: 40,),
+                ),
+                // IconButton(
+                //   onPressed: () => signout(context),
+                //   icon: Icon(Icons.exit_to_app),
+                //   color: Colors.white,
+                // )
               ],
               title: Text(
                 "WELCOME",
@@ -59,9 +67,6 @@ class _HomePageState extends State<HomePage> {
                   indicator: BoxDecoration(color: Color.fromARGB(61, 0, 0, 0)),
                   labelColor: Colors.white,
                   tabs: [
-                    Tab(
-                      text: "fierbase",
-                    ),
                     Tab(
                       text: "Recent Photos",
                     ),
@@ -77,13 +82,16 @@ class _HomePageState extends State<HomePage> {
             body: SafeArea(
               child: TabBarView(
                 children: [
-                  FireBaseImages(),
-                  Recent(email:widget.email ,),
+                  Recent(
+                    email: widget.email,
+                  ),
                   // for Gallery
                   Gallery(
                     email: widget.email,
                   ),
-                  Favourite(email: widget.email,)
+                  Favourite(
+                    email: widget.email,
+                  )
                 ],
               ),
             )),
@@ -91,23 +99,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> getfreomgallery() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      final time = DateTime.now();
-      setState(() {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [Text("Do you want to upload the picture")],
-                  ),
-                ),
-              );
-            });
-      });
-    }
+  showdetail() {
+    PopupMenuButton(
+        color: Colors.white,
+        itemBuilder: (context) => [
+              PopupMenuItem(child: Text("Name")),
+              PopupMenuItem(child: Text("Email")),
+              PopupMenuItem(child: Text("Signout")),
+            ]);
   }
 }

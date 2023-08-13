@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:mygallery/pages/homepage.dart';
 
 class RegisterAuth extends StatelessWidget {
   RegisterAuth({super.key});
@@ -12,24 +14,37 @@ class RegisterAuth extends StatelessWidget {
   TextEditingController cpasswordcontroller = TextEditingController();
   String nameo = "ajb";
 
-  createaccount() async {
+  createaccount(context) async {
     String name = namecontroller.text.trim();
     String email = emailcontroller.text.trim();
     String password = passwordcontroller.text.trim();
     String cpassword = cpasswordcontroller.text.trim();
 
     if (email == "" || password == "") {
-      print("fill");
+      ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("fill all field")));
     } else if (password != cpassword) {
-      print("password not matching");
+      ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Password not matching")));
     } else {
       try {
         nameo = email;
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
         print("User created");
+        if (userCredential != null) {
+          print("${userCredential.user!.email}");
+          Navigator.popUntil(context, (route) => route.isFirst);
+          Navigator.pushReplacement(
+              context,
+              CupertinoPageRoute(
+                  builder: (context) => HomePage(
+                        email: FirebaseAuth.instance.currentUser!.email,
+                      )));
+        }
       } on FirebaseAuthException catch (ex) {
-        print("${ex}");
+        return ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("${ex.code}")));
       }
     }
   }
@@ -115,7 +130,7 @@ class RegisterAuth extends StatelessWidget {
                 ),
               ])),
           InkWell(
-            onTap: createaccount,
+            onTap: () => createaccount(context),
             child: Container(
               alignment: Alignment.center,
               height: 50,

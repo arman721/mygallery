@@ -2,10 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mygallery/assets/widgets/recent.dart';
-import 'package:mygallery/assets/widgets/userdata.dart';
 import 'package:mygallery/pages/homepage.dart';
 import 'package:path/path.dart';
-import 'userdata.dart';
+
 
 class LoginAuth extends StatefulWidget {
   LoginAuth({super.key});
@@ -19,7 +18,7 @@ class _LoginAuthState extends State<LoginAuth> {
 
   TextEditingController passwordcontroller = TextEditingController();
 
-  String emailo = "";
+
 
   @override
   login(context) async {
@@ -27,24 +26,24 @@ class _LoginAuthState extends State<LoginAuth> {
     String password = passwordcontroller.text.trim();
 
     if (email == "" || password == "") {
-      print("Field all the field");
+      ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Fill all Field")));
     } else {
       try {
-        emailo = email;
         UserCredential userCredential = await FirebaseAuth.instance
             .signInWithEmailAndPassword(email: email, password: password);
         if (userCredential != null) {
-          print("${userCredential.user!.email}");
           Navigator.popUntil(context, (route) => route.isFirst);
           Navigator.pushReplacement(
               context,
               CupertinoPageRoute(
                   builder: (context) => HomePage(
-                        email:emailo,
+                        email:FirebaseAuth.instance.currentUser!.email,
                       )));
         }
       } on FirebaseAuthException catch (ex) {
-        print("ex");
+        return ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("${ex.code}")));
       }
     }
   }
